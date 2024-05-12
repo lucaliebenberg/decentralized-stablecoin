@@ -1,5 +1,7 @@
 # Decentralized Stablecoin (Foundry) 
 
+Project state -> in development  
+
 1. Relative Stability: Anchored or Pegged -> $1.00
     - Chainlink Price Feed
     - Set a function to exchange ETH & BTC -> $$$
