@@ -1,4 +1,4 @@
-DeFi Stablecoin Architecture 
+# DeFi Stablecoin Architecture 
 
 1. Relative Stability: Anchored or Pegged -> $1.00
     - Chainlink Price Feed
