@@ -1,6 +1,6 @@
 # Decentralized Stablecoin (Foundry) 
 
-Project state -> in development  
+Project state -> In development  
 
 1. Relative Stability: Anchored or Pegged -> $1.00
     - Chainlink Price Feed
