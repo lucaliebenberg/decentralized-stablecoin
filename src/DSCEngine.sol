@@ -54,10 +54,15 @@ contract DSDEngine is ReentrancyGuard {
     error DSCEngine__TokenAddressesAndPriceFeedAddressesMustBeSameLength();
     error DSCEngine__NotAllowedToken();
     error DSCEngine__TransferFailed();
+    error DSCEngine__BreaksHealthFactor(uint256 healthFactor);
 
     /* State Variables */
     uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10;
     uint256 private constant PRECISION = 1e18;
+    uint256 private constant LIQUIDATION_THRESHOLD = 50; // 150->200% over collateralized
+    uint256 private constant LIQUIDATION_PRECISION = 100; 
+    uint256 private constant MIN_HEALTH_FACTOR = 1; 
+
     
     mapping(address token => address priceDFeed) private s_priceFeeds;
     mapping(address user => mapping(address token => uint256 amount)) private s_collateralDeposited;
@@ -139,7 +144,7 @@ contract DSDEngine is ReentrancyGuard {
     function mintDSC(uint256 amountDscToMint) external moreThanZero(amountDscToMint) nonReentrant {
         s_DSCMinted[msg.sender] += amountDscToMint;
         // if they minted too much 
-        revertIfHealthFactorIsBroken(msg.sender);
+        _revertIfHealthFactorIsBroken(msg.sender);
 
     }
     function burnDSC() external {}
@@ -169,11 +174,17 @@ contract DSDEngine is ReentrancyGuard {
         // total DSC minted
         // total colalteral VALUE
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = _getAccountInformation(user);
+        uint256 collateralAdjustedForThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
+        return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
     }
     
-    function revertIfHealthFactorIsBroken(address user) internal view {
-        // 1. Check health factor (do they have enough collateral)
-        // 2. Revert if they do not
+    // 1. Check health factor (do they have enough collateral)
+    // 2. Revert if they do not
+    function _revertIfHealthFactorIsBroken(address user) internal view {
+        uint256 userHealthFactor = _healthFactor(user);
+        if (userHealthFactor < MIN_HEALTH_FACTOR) {
+            revert DSCEngine__BreaksHealthFactor(userHealthFactor);
+        }
     }
 
     /* Public & External Functions */
