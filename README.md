@@ -1,4 +1,4 @@
-# Decentralized Stablecoin (Foundry) 
+# Decentralized Stablecoin
 
 Project state -> In development  
 
