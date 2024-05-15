@@ -80,15 +80,15 @@ contract DSCEngine is ReentrancyGuard {
     modifier moreThanZero(uint256 amount) {
         if (amount == 0){
             revert DSCEngine__NeedsMoreThanZero();
-            _;
         }
+        _;
     }
 
     modifier isAllowedToken(address token) {
-        if (s_priceFeeds[token] == address(0)){
+        if (s_priceFeeds[token] == address(0)) {
             revert DSCEngine__NotAllowedToken();
         }
-        _;
+       _;
     }
 
 
