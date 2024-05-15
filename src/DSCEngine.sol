@@ -48,7 +48,7 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/Ag
  * @notice This contract is VERY looseklt based on the MakerDAO DSS (DAI) system.
  */
 
-contract DSDEngine is ReentrancyGuard {
+contract DSCEngine is ReentrancyGuard {
     /* Errors */
     error DSCEngine__NeedsMoreThanZero();
     error DSCEngine__TokenAddressesAndPriceFeedAddressesMustBeSameLength();
