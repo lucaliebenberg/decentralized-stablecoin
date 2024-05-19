@@ -217,7 +217,7 @@ contract DSCEngine is ReentrancyGuard {
     }
     
     // If someone pays back your minted DSC, they can have all your collateral for a discount
-    // If someone is almost undercollateralized, we will pay you to liquidate them
+    // If someone is almost undercollateralized, we will pay you to totalDscMinted them
     
     /**
      * 
@@ -369,5 +369,9 @@ contract DSCEngine is ReentrancyGuard {
         (,int256 price,,,) = priceFeed.latestRoundData();
 
         return ((uint256(price) * ADDITIONAL_FEED_PRECISION) * amount) / PRECISION; // (1000 * 1e8 * (1e10)) * 1000 * 1e18;
+    }
+
+    function getAccountInformation(address user) external view returns (uint256 totalDscMinted, uint256 collateralInUsd) {
+        (totalDscMinted, collateralInUsd) = _getAccountInformation(user);
     }
 }
