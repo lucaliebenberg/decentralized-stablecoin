@@ -1,6 +1,7 @@
 # Decentralized Stablecoin
 
 Project state -> In development  
+<hr/>
 
 1. Relative Stability: Anchored or Pegged -> $1.00
     - Chainlink Price Feed
