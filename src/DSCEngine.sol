@@ -167,8 +167,9 @@ contract DSCEngine is ReentrancyGuard {
     ) 
     external 
     {
-        burnDSC(amountDscToBurn);
-        redeemCollateral(tokenCollateralAddress, amountCollateral, msg.sender, msg.sender);
+        _burnDsc(amountDscToBurn, msg.sender, msg.sender);
+        _redeemCollateral(tokenCollateralAddress, amountCollateral, msg.sender, msg.sender);
+        revertIfHealthFactorIsBroken(msg.sender);
         // redeemCollateral already checks health factor
     }
     
@@ -177,9 +178,7 @@ contract DSCEngine is ReentrancyGuard {
     function redeemCollateral
     (
         address tokenCollateralAddress,
-        uint256 amountCollateral,
-        address from,
-        address to
+        uint256 amountCollateral
     ) 
     public
     moreThanZero(amountCollateral)
@@ -282,7 +281,8 @@ contract DSCEngine is ReentrancyGuard {
      */
     function _burnDsc(uint256 amountDscToBurn, address onBehalfOf, address dscFrom) private {
         s_DSCMinted[onBehalfOf] -= amountDscToBurn;
-        bool success = i_dsc.transferFrom(msg.sender, address(this), amountDscToBurn);
+
+        bool success = i_dsc.transferFrom(dscFrom, address(this), amountDscToBurn);
         // This conditional is hypothetically unreachable
         if (!success) {
             revert DSCEngine__TransferFailed();
@@ -293,17 +293,17 @@ contract DSCEngine is ReentrancyGuard {
     function _redeemCollateral
     (
         address tokenCollateralAddress,
-         uint256 amountCollateral,
-         address from, 
-         address to 
+        uint256 amountCollateral,
+        address from,
+        address to
+    
     )
     private 
     {
         s_collateralDeposited[from][tokenCollateralAddress] -= amountCollateral;
         emit CollateralRedeemed(from, to, tokenCollateralAddress, amountCollateral);
-
         bool success = IERC20(tokenCollateralAddress).transfer(to, amountCollateral);
-        if (!success){
+        if (!success) {
             revert DSCEngine__TransferFailed();
         }
     }
@@ -371,6 +371,26 @@ contract DSCEngine is ReentrancyGuard {
         return ((uint256(price) * ADDITIONAL_FEED_PRECISION) * amount) / PRECISION; // (1000 * 1e8 * (1e10)) * 1000 * 1e18;
     }
 
+        function _calculateHealthFactor(
+        uint256 totalDscMinted,
+        uint256 collateralValueInUsd
+    )
+        internal
+        pure
+        returns (uint256)
+    {
+        if (totalDscMinted == 0) return type(uint256).max;
+        uint256 collateralAdjustedForThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
+        return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
+    }
+
+    function revertIfHealthFactorIsBroken(address user) internal view {
+        uint256 userHealthFactor = _healthFactor(user);
+        if (userHealthFactor < MIN_HEALTH_FACTOR) {
+            revert DSCEngine__BreaksHealthFactor(userHealthFactor);
+        }
+    }
+
     function getAccountInformation(address user) external view returns (uint256 totalDscMinted, uint256 collateralInUsd) {
         (totalDscMinted, collateralInUsd) = _getAccountInformation(user);
     }
@@ -401,6 +421,10 @@ contract DSCEngine is ReentrancyGuard {
 
     function getCollateralTokens() external view returns (address[] memory) {
         return s_collateralTokens;
+    }
+
+    function getCollateralBalanceOfUser(address user, address token) external view returns (uint256) {
+        return LIQUIDATION_THRESHOLD;
     }
 
     function getDsc() external view returns (address) {
