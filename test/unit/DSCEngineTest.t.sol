@@ -104,4 +104,17 @@ contract DSCEngineTest is Test {
         assertEq(totalDscMinted, expectedTotalDscMinted);
         assertEq(AMOUNT_COLLATERAL, expectedDepositAmount);
     }
+
+
+    ///////////////////
+    /// Fuzz Tests ///
+    ///////////////////
+
+    /* Stateless fuzzing: the state of the previous run is discarded everytime ['foundry fuzzing']  */
+    /* Stateful fuzzing: the final state of the previoua run is the starting state for the next run ['foundry variants']
+        -> for invariant tests, one needs to make use of invariant_ keyword
+      */
+
+    // 1. Understand what the invariants are (what variables need to have what outputs)
+    // 2. Write a fuzz test for that invariant (random input data)
 }
