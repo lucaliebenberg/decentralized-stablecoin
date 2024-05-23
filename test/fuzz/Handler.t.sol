@@ -38,6 +38,25 @@ contract Handler is Test {
     }
 
 
+     function mintDsc(uint256 amount) public {
+        
+        vm.startPrank(msg.sender);
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) = engine.getAccountInformation(msg.sender);
+        int256 maxDscToMint = int256(collateralValueInUsd / 2) - int256(totalDscMinted);
+        if (maxDscToMint < 0) {
+            return;
+        }
+        amount = bound(amount, 0, uint256(maxDscToMint));
+        if (amount == 0) {
+            return;
+        }
+        vm.startPrank(msg.sender);
+
+        engine.mintDSC(amount);
+        vm.stopPrank();
+     }
+     
+     
      // FUNCTOINS TO INTERACT WITH
 
     function depositCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
