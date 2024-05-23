@@ -16,13 +16,13 @@ contract Handler is Test {
     // Deployed contracts to interact with
     DSCEngine public engine;
     DecentralizedStableCoin public dsc;
-    // MockV3Aggregator public ethUsdPriceFeed;
-    // MockV3Aggregator public btcUsdPriceFeed;
     ERC20Mock public weth;
     ERC20Mock public wbtc;
 
     uint256 public timesMintIsCalled;
     address[] public usersWithCollateralDeposited;
+    MockV3Aggregator public ethUsdPriceFeed;
+    // MockV3Aggregator public btcUsdPriceFeed;
 
     // Ghost Variables
     uint96 public constant MAX_DEPOSIT_SIZE = type(uint96).max;
@@ -35,7 +35,7 @@ contract Handler is Test {
         weth = ERC20Mock(collateralTokens[0]);
         wbtc = ERC20Mock(collateralTokens[1]);
 
-        // ethUsdPriceFeed = MockV3Aggregator(engine.getCollateralTokenPriceFeed(address(weth)));
+        ethUsdPriceFeed = MockV3Aggregator(engine.getCollateralTokenPriceFeed(address(weth)));
         // btcUsdPriceFeed = MockV3Aggregator(engine.getCollateralTokenPriceFeed(address(wbtc)));
     }
 
@@ -91,6 +91,12 @@ contract Handler is Test {
         engine.redeemCollateral(address(collateral), amountCollateral);
     }
 
+    /* This breaks our invariant test suite */
+    // function updateCollateralPrice(uint96 newPrice) public {
+    //     int256 newPriceInt = int256(uint256(newPrice));
+    //     ethUsdPriceFeed.updateAnswer(newPriceInt);
+    // }
+    
     // Helper functions
     function _getCollateralFromSeed(uint256 collateralSeed) private view returns (ERC20Mock)
     {
